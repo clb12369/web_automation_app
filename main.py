@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.chromium import service
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,34 +6,98 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 
 username = os.environ.get("USERNAME")
 password = os.environ.get("PASSWORD")
 
-print(username)
-print(password)
+# print(username)
+# print(password)
 
-# Define driver, options, and service
-chrome_options = Options()
-chrome_options.add_argument("--disable-search-engine-choice-screen")
-service = Service("chromedriver-linux64/chromedriver")
-driver = webdriver.Chrome(options=chrome_options, service=service)
+class WebAutomation:
+    def __init__(self):
+        # Define driver, options, and service
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-search-engine-choice-screen")
 
-# Load the webpage
-driver.get("https://demoqa.com/login")
+        download_path = os.getcwd()
+        prefs = {'download.default_dictionary': download_path}
+        chrome_options.add_experimental_option('prefs', prefs)
 
-# Locate username, password, and login button
-username_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'userName')))
-password_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'password')))
-login_button = driver.find_element(By.ID, 'login')
+        service = Service("chromedriver-linux64/chromedriver")
+        self.driver = webdriver.Chrome(options=chrome_options, service=service)
 
-# Fill in username and password, and click the button
-username_field.send_keys(str(username))
-password_field.send_keys(str(password))
-driver.execute_script("arguments[0].click();", login_button)
-# login_button.click()
+    def login(self, username, password):
+        # Load the webpage
+        self.driver.get("https://demoqa.com/login")
 
-input("Press 'Enter' to close the browser.")
-driver.quit()
+        # Locate username, password, and login button
+        username_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, 'userName')))
+        password_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, 'password')))
+        login_button = self.driver.find_element(By.ID, 'login')
+
+        #Fill in username and password, and click the button
+
+        username_field.send_keys(str(username))
+        password_field.send_keys(str(password))
+        self.driver.execute_script("arguments[0].click();", login_button)
+        # login_button.click()
+
+    def fill_form(self, fullname, email, current_address, permanent_address):
+        # Locate the Elements dropdown and Text Box
+        elements = (WebDriverWait(self.driver, 10)
+                    .until(
+            EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div/div/div[1]/div/div/div[1]/span/div'))))
+        elements.click()
+        time.sleep(1)
+        # text_box = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'item-0')))
+        text_box = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="item-0"]/a')))
+
+        if text_box.is_enabled():
+            text_box.click()
+
+        # Locate the form fields and submit button
+        fullname_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, 'userName')))
+        email_field = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, 'userEmail')))
+        current_address_field = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, 'currentAddress')))
+        permanent_address_field = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, 'permanentAddress')))
+        submit_button = self.driver.find_element(By.ID, 'submit')
+
+        # Fill in the form fields
+        fullname_field.send_keys(fullname)
+        email_field.send_keys(email)
+        current_address_field.send_keys(current_address)
+        permanent_address_field.send_keys(permanent_address)
+        self.driver.execute_script("arguments[0].click();", submit_button)
+
+    def download(self):
+        # Locate the Upload and Download section and the Download button
+        upload_download = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, 'item-7')))
+        upload_download.click()
+
+        download_button = self.driver.find_element(By.ID, 'downloadButton')
+        self.driver.execute_script("arguments[0].click();", download_button)
+
+    def close(self):
+        # Close the program
+        # input("Press 'Enter' to close the browser.")
+        self.driver.quit()
+
+
+if __name__ == '__main__':
+    web_automation = WebAutomation()
+    web_automation.login(username, password)
+    web_automation.fill_form("John Smith", "john@gmail.com", "Street 1", "Street 2")
+    web_automation.download()
+    web_automation.close()
+
+
+
+
+
+
+
